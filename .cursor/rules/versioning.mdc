@@ -1,0 +1,16 @@
+---
+description: Hangman sürüm numarası — vX.Y.Z ve Play versionCode
+alwaysApply: true
+---
+
+# Sürüm: vX.Y.Z
+
+`pubspec.yaml` → `version: X.Y.Z+CODE`
+`AppIdentity.version` → `'X.Y.Z'` (aynı X.Y.Z, +CODE yok)
+
+| Parça | Ne zaman artar |
+|---|---|
+| **X** | Google Play’e yeni sürüm yüklenince (Y=0, Z=0, CODE++) |
+| **Y** | Testten geçip stable olunca (Z=0) |
+| **Z** | Her commit’te |
+| **CODE** | Yalnızca Play yüklemesinde (`+N`) |
