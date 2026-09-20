@@ -22,7 +22,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.arusoft.hangman"
+        applicationId = "com.arusoft.hangdaily"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

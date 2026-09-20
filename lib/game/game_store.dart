@@ -7,6 +7,7 @@ import '../config/app_config.dart';
 import '../game/daily_word.dart';
 import '../game/hangman_round.dart';
 import '../game/letters.dart';
+import '../game/streak.dart';
 
 class GameStore extends ChangeNotifier {
   GameStore();
@@ -15,6 +16,21 @@ class GameStore extends ChangeNotifier {
   String language = GameConfig.defaultLanguage;
   bool loading = true;
   String? error;
+  bool resultSeen = false;
+  int streak = 0;
+  String? lastWinDay;
+
+  bool get hasProgress =>
+      round != null && round!.guessed.isNotEmpty && !round!.isWon && !round!.isLost;
+
+  bool get finishedToday =>
+      round != null && round!.status != RoundStatus.playing;
+
+  String get playLabel {
+    if (finishedToday) return AppStrings.seeToday(language);
+    if (hasProgress) return AppStrings.continuePlay(language);
+    return AppStrings.play(language);
+  }
 
   Future<void> load() async {
     loading = true;
@@ -26,6 +42,8 @@ class GameStore extends ChangeNotifier {
     if (!GameConfig.supportedLanguages.contains(language)) {
       language = GameConfig.defaultLanguage;
     }
+    streak = prefs.getInt(AppPrefsKeys.streak) ?? 0;
+    lastWinDay = prefs.getString(AppPrefsKeys.lastWinDay);
 
     final daily = await pickDailyWord(language: language);
     if (daily == null) {
@@ -47,6 +65,8 @@ class GameStore extends ChangeNotifier {
           ? savedGuesses.map((g) => foldLetter(g, language)).toSet()
           : <String>{},
     );
+    resultSeen = sameDay &&
+        prefs.getString(AppPrefsKeys.resultSeen) == '${daily.dayKey}|$language';
     loading = false;
     error = null;
     notifyListeners();
@@ -64,7 +84,28 @@ class GameStore extends ChangeNotifier {
   Future<void> guess(String letter) async {
     final current = round;
     if (current == null || !current.canGuess(letter)) return;
-    round = current.guess(letter);
+    final next = current.guess(letter);
+    if (current.status == RoundStatus.playing &&
+        next.status != RoundStatus.playing) {
+      final update = nextStreak(
+        won: next.isWon,
+        today: next.dayKey,
+        lastWinDay: lastWinDay,
+        streak: streak,
+      );
+      streak = update.streak;
+      lastWinDay = update.lastWinDay;
+      resultSeen = false;
+    }
+    round = next;
+    notifyListeners();
+    await _persist();
+  }
+
+  Future<void> markResultSeen() async {
+    final current = round;
+    if (current == null) return;
+    resultSeen = true;
     notifyListeners();
     await _persist();
   }
@@ -81,5 +122,15 @@ class GameStore extends ChangeNotifier {
       AppPrefsKeys.guesses,
       current.guessed.toList(),
     );
+    await prefs.setInt(AppPrefsKeys.streak, streak);
+    if (lastWinDay != null) {
+      await prefs.setString(AppPrefsKeys.lastWinDay, lastWinDay!);
+    }
+    if (resultSeen) {
+      await prefs.setString(
+        AppPrefsKeys.resultSeen,
+        '${current.dayKey}|${current.language}',
+      );
+    }
   }
 }

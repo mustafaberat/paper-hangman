@@ -3,9 +3,8 @@ library;
 import 'package:flutter/material.dart';
 
 import '../components/hangman_figure.dart';
-import '../components/letter_keyboard.dart';
-import '../components/notebook_paper.dart';
-import '../components/word_slots.dart';
+import '../components/ink_button.dart';
+import '../components/paper_page.dart';
 import '../config/app_config.dart';
 import '../game/game_store.dart';
 import '../game/hangman_round.dart';
@@ -20,155 +19,113 @@ class HomeScreen extends StatelessWidget {
     return ListenableBuilder(
       listenable: store,
       builder: (context, _) {
-        return Scaffold(
-          backgroundColor: AppColors.paper,
-          body: Stack(
-            fit: StackFit.expand,
-            children: [
-              const NotebookPaper(),
-              SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppDimens.pagePadding,
-                    AppDimens.spaceSmall,
-                    AppDimens.pagePadding,
-                    AppDimens.spaceMedium,
-                  ),
-                  child: Align(
-                    alignment: Alignment.topCenter,
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(
-                        maxWidth: AppDimens.playMaxWidth,
-                      ),
-                      child: store.loading
-                          ? const Center(
-                              child: CircularProgressIndicator(
-                                color: AppColors.ink,
-                              ),
-                            )
-                          : store.error != null
-                              ? Center(child: Text(store.error!))
-                              : _Play(store: store),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+        return PaperPage(
+          child: store.loading
+              ? const Center(
+                  child: CircularProgressIndicator(color: AppColors.ink),
+                )
+              : store.error != null
+                  ? Center(child: Text(store.error!))
+                  : _Menu(store: store),
         );
       },
     );
   }
 }
 
-class _Play extends StatelessWidget {
-  const _Play({required this.store});
+class _Menu extends StatelessWidget {
+  const _Menu({required this.store});
 
   final GameStore store;
 
   @override
   Widget build(BuildContext context) {
-    final round = store.round!;
-    final status = round.status;
+    final lang = store.language;
+    final round = store.round;
+    final finished = store.finishedToday;
 
     return Column(
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Expanded(
-              child: Text(
-                AppStrings.titleFor(store.language),
-                style: Theme.of(context).textTheme.displayLarge,
-              ),
-            ),
-            for (final code in GameConfig.supportedLanguages)
-              Padding(
-                padding: const EdgeInsets.only(left: 6),
-                child: _LangChip(
-                  code: code,
-                  selected: store.language == code,
-                  onTap: () => store.setLanguage(code),
-                ),
-              ),
-          ],
-        ),
-        const SizedBox(height: 2),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            status == RoundStatus.won
-                ? AppStrings.won(store.language)
-                : status == RoundStatus.lost
-                    ? AppStrings.lost(store.language)
-                    : AppStrings.remaining(round.remaining, store.language),
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-        ),
-        Expanded(
+        const Spacer(),
+        const SizedBox(
+          height: 148,
           child: FittedBox(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                HangmanFigure(mistakes: round.mistakes),
-                const SizedBox(height: AppDimens.spaceMedium),
-                WordSlots(round: round),
-              ],
-            ),
+            child: HangmanFigure(mistakes: 0),
           ),
         ),
-        const SizedBox(height: AppDimens.spaceMedium),
-        LetterKeyboard(round: round, onKey: store.guess),
-        const SizedBox(height: AppDimens.spaceMedium),
+        const SizedBox(height: AppDimens.spaceSmall),
         Text(
-          AppStrings.developerLine(),
+          AppStrings.appTitle(lang),
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                fontSize: 48,
+              ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          AppStrings.tagline(lang),
           style: Theme.of(context).textTheme.bodyMedium,
         ),
-      ],
-    );
-  }
-}
-
-class _LangChip extends StatelessWidget {
-  const _LangChip({
-    required this.code,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String code;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(6),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              AppStrings.languageLabel(code),
-              style: TextStyle(
-                fontFamily: AppType.hand,
-                color: selected ? AppColors.pen : AppColors.textMuted,
-                fontWeight: FontWeight.w400,
-                fontSize: 18,
-                height: 1,
-              ),
+        if (round != null) ...[
+          const SizedBox(height: 4),
+          Text(
+            AppStrings.todayLabel(round.dayKey, lang),
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
+        ],
+        if (store.streak > 0) ...[
+          const SizedBox(height: 4),
+          Text(
+            AppStrings.streakLine(store.streak, lang),
+            style: const TextStyle(
+              fontFamily: AppType.hand,
+              color: AppColors.pen,
+              fontSize: 18,
             ),
-            const SizedBox(height: 2),
-            Container(
-              width: 22,
-              height: 2.5,
-              color: selected ? AppColors.pen : AppColors.transparent,
+          ),
+        ],
+        if (finished && round != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            round.status == RoundStatus.won
+                ? AppStrings.won(lang)
+                : AppStrings.lost(lang),
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: AppType.pen,
+              color: round.status == RoundStatus.won
+                  ? AppColors.pen
+                  : AppColors.miss,
+              fontSize: 26,
             ),
-          ],
+          ),
+        ],
+        const Spacer(),
+        InkButton(
+          label: store.playLabel,
+          large: true,
+          onTap: () => Navigator.pushNamed(context, AppRoutes.play),
         ),
-      ),
+        const SizedBox(height: AppDimens.spaceSmall),
+        TextButton(
+          onPressed: () => Navigator.pushNamed(context, AppRoutes.settings),
+          child: Text(
+            AppStrings.settings(lang),
+            style: const TextStyle(
+              fontFamily: AppType.hand,
+              color: AppColors.textMuted,
+              fontSize: 20,
+            ),
+          ),
+        ),
+        const SizedBox(height: AppDimens.spaceLarge),
+        Text(
+          AppStrings.howToLines(lang),
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+        const Spacer(),
+      ],
     );
   }
 }

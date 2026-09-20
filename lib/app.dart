@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'config/app_config.dart';
 import 'game/game_store.dart';
 import 'screens/home_screen.dart';
+import 'screens/play_screen.dart';
+import 'screens/settings_screen.dart';
 
 class HangmanApp extends StatelessWidget {
   const HangmanApp({required this.store, super.key});
@@ -18,7 +20,12 @@ class HangmanApp extends StatelessWidget {
       title: AppIdentity.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.paper,
-      home: HomeScreen(store: store),
+      initialRoute: AppRoutes.home,
+      routes: {
+        AppRoutes.home: (_) => HomeScreen(store: store),
+        AppRoutes.play: (_) => PlayScreen(store: store),
+        AppRoutes.settings: (_) => SettingsScreen(store: store),
+      },
     );
   }
 }

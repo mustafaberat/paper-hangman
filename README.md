@@ -2,22 +2,26 @@
 
 A minimal daily hangman word game.
 
-Release, web, and device install scripts live outside this repo:
-
-`../lib/scripts/`
-
-Run them from this project root:
+Ortak scriptler oyun dışında: `../lib/scripts/`
 
 ```bash
 APP_ROOT=. ../lib/scripts/run_web.sh
-APP_ROOT=. ../lib/scripts/build_play.sh
 APP_ROOT=. ../lib/scripts/install_release.sh
+APP_ROOT=. ../lib/scripts/generate_game_images.sh
 ```
 
 | Script | What it does |
 |---|---|
 | `run_web.sh` | Chrome on port 8080 (`WEB_PORT=3000` to change) |
-| `build_play.sh` | Play AAB + APK → `play/versions/{major}/` |
-| `install_release.sh` | Build APK, adb install, launch |
+| `install_release.sh` | Play AAB + APK → `play/versions/{major}/`; sürüm notunu basar |
+| `generate_game_images.sh` | Play telefon/tablet/pc görselleri |
 
-Do not copy these into `scripts/`. Fixes go in `mobile-apps/lib/scripts/`.
+Play görselleri:
+
+- `play/icon-512.png` — mağaza / launcher ikonu
+- `play/feature-graphic.png` — 1024×500 özellik grafiği
+- `play/icon.png` — orijinal kare kaynak
+- `play/gorseller/` — telefon / tablet / pc / chromebook ekranları
+- `play/whatsnew.txt` — 6 dil sürüm notu (şablon: `../lib/play/whatsnew.template.txt`)
+
+Ekran senaryosu: `tool/capture_play_shots.dart`. Ortak scriptleri `scripts/` altına kopyalama.

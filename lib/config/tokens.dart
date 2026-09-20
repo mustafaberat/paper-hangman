@@ -6,18 +6,23 @@ import 'package:flutter/material.dart';
 abstract final class AppIdentity {
   static const String appName = 'Hangman';
   static const String developer = 'ARU SOFT';
-  static const String packageId = 'com.arusoft.hangman';
-  static const String version = '1.0.0';
+  static const String packageId = 'com.arusoft.hangdaily';
+  static const String version = '1.0.1';
 }
 
 abstract final class AppRoutes {
   static const String home = '/';
+  static const String play = '/play';
+  static const String settings = '/settings';
 }
 
 abstract final class AppPrefsKeys {
   static const String language = 'language';
   static const String dayKey = 'day_key';
   static const String guesses = 'guesses';
+  static const String streak = 'streak';
+  static const String lastWinDay = 'last_win_day';
+  static const String resultSeen = 'result_seen';
 }
 
 abstract final class AppColors {

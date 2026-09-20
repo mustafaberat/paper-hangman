@@ -3,6 +3,7 @@ import 'package:hangman/config/game_config.dart';
 import 'package:hangman/game/daily_word.dart';
 import 'package:hangman/game/hangman_round.dart';
 import 'package:hangman/game/letters.dart';
+import 'package:hangman/game/streak.dart';
 
 void main() {
   test('daily index is stable for a day and language', () {
@@ -33,5 +34,29 @@ void main() {
     }
     expect(round.mistakes, GameConfig.maxMistakes);
     expect(round.status, RoundStatus.lost);
+  });
+
+  test('streak grows on consecutive wins and resets on a loss', () {
+    final first = nextStreak(
+      won: true,
+      today: '2026-09-17',
+      lastWinDay: null,
+      streak: 0,
+    );
+    expect(first.streak, 1);
+    final second = nextStreak(
+      won: true,
+      today: '2026-09-18',
+      lastWinDay: first.lastWinDay,
+      streak: first.streak,
+    );
+    expect(second.streak, 2);
+    final lost = nextStreak(
+      won: false,
+      today: '2026-09-19',
+      lastWinDay: second.lastWinDay,
+      streak: second.streak,
+    );
+    expect(lost.streak, 0);
   });
 }
