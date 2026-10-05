@@ -1,18 +1,18 @@
 <tr-TR>
-Sınırsız oyna: günlük kelime limiti kalktı. İstediğin kadar tur. Yeni ad: Paper Hangman / Adam Asmaca.
+Sınırsız oyna. İstediğin kadar tur. Paper Hangman / Adam Asmaca.
 </tr-TR>
 <en-US>
-Play without limits — the daily word cap is gone. New name: Paper Hangman.
+Play without limits. As many rounds as you want. Paper Hangman.
 </en-US>
 <es-419>
-Juega sin límite: se quitó la palabra del día. Nuevo nombre: Paper Hangman.
+Juega sin límite. Tantas rondas como quieras. Paper Hangman.
 </es-419>
 <pt-BR>
-Jogue sem limites — a palavra do dia acabou. Novo nome: Paper Hangman.
+Jogue sem limites. Quantas rodadas quiser. Paper Hangman.
 </pt-BR>
 <id>
-Main tanpa batas — kata harian dihapus. Nama baru: Paper Hangman.
+Main tanpa batas. Sebanyak yang kamu mau. Paper Hangman.
 </id>
 <hi-IN>
-बिना सीमा खेले — दैनिक शब्द हटाया गया। नया नाम: Paper Hangman.
+बिना सीमा खेले। जितनी चाहें उतनी राउंड। Paper Hangman.
 </hi-IN>

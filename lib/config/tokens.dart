@@ -4,10 +4,10 @@ library;
 import 'package:flutter/material.dart';
 
 abstract final class AppIdentity {
-  /// Play / launcher display name (package stays com.arusoft.hangdaily).
+  /// Play / launcher display name.
   static const String appName = 'Paper Hangman';
   static const String developer = 'ARU SOFT';
-  static const String packageId = 'com.arusoft.hangdaily';
+  static const String packageId = 'com.arusoft.hangman';
   static const String version = '2.1.0';
 }
 

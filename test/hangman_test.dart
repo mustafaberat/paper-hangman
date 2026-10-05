@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hangman/config/game_config.dart';
-import 'package:hangman/game/daily_word.dart';
+import 'package:hangman/game/word_bank.dart';
 import 'package:hangman/game/hangman_round.dart';
 import 'package:hangman/game/letters.dart';
 import 'package:hangman/game/streak.dart';

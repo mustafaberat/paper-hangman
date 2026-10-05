@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../config/app_config.dart';
-import '../game/daily_word.dart';
+import '../game/word_bank.dart';
 import '../game/hangman_round.dart';
 import '../game/letters.dart';
 import '../game/streak.dart';

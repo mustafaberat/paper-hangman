@@ -1,8 +1,9 @@
 # Paper Hangman
 
-Notebook-style hangman. Play as many rounds as you want (not a daily puzzle).
+Notebook-style hangman. Play as many rounds as you want.
 
-Package id stays `com.arusoft.hangdaily` (Play listing). Display name: **Paper Hangman**.
+Package: `com.arusoft.hangman` · Display: **Paper Hangman** / **Adam Asmaca**  
+Repo: [mustafaberat/paper-hangman](https://github.com/mustafaberat/paper-hangman)
 
 Ortak scriptler: `../lib/scripts/`
 

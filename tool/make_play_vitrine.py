@@ -39,7 +39,7 @@ SLIDES = {
             "brand": "Adam Asmaca",
             "title": "İstediğin kadar oyna",
             "accent_word": "İstediğin",
-            "sub": "Günlük limit yok — kareli defterde klasik adam asmaca.",
+            "sub": "Kareli defterde klasik adam asmaca — limit yok.",
             "chips": ["Sınırsız tur", "TR / EN", "6 hak"],
         },
         {
@@ -65,7 +65,7 @@ SLIDES = {
             "brand": "Paper Hangman",
             "title": "Play without limits",
             "accent_word": "without",
-            "sub": "No daily lock — classic hangman on notebook paper.",
+            "sub": "Classic hangman on notebook paper — unlimited rounds.",
             "chips": ["Unlimited", "TR / EN", "6 misses"],
         },
         {
