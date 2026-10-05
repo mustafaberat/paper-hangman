@@ -56,8 +56,9 @@ app.*.map.json
 *.aab
 *.apk
 
-# Play ekran görüntüleri — scripts/generate_game_images.sh üretir
+# Play ekran görüntüleri — generate / vitrine pipeline
 play/gorseller/telefon/
 play/gorseller/tablet/
 play/gorseller/pc/
 play/gorseller/chromebook/
+play/gorseller/raw/

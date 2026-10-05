@@ -1,11 +1,11 @@
 {
-    "name": "Hangman",
-    "short_name": "Hangman",
+    "name": "Paper Hangman",
+    "short_name": "Paper Hangman",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#F7F3E8",
     "theme_color": "#F7F3E8",
-    "description": "A minimal daily hangman word game.",
+    "description": "Notebook-style hangman — play unlimited rounds.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

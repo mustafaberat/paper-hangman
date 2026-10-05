@@ -5,18 +5,18 @@ import 'tokens.dart';
 
 abstract final class AppStrings {
   static String appTitle(String language) =>
-      language == 'en' ? 'Hangman' : 'Adam Asmaca';
+      language == 'en' ? 'Paper Hangman' : 'Adam Asmaca';
 
   static String tagline(String language) =>
-      language == 'en' ? 'One word a day' : 'Her gün bir kelime';
+      language == 'en' ? 'Guess as many words as you like' : 'İstediğin kadar kelime tahmin et';
 
   static String play(String language) => language == 'en' ? 'Play' : 'Oyna';
 
   static String continuePlay(String language) =>
       language == 'en' ? 'Continue' : 'Devam et';
 
-  static String seeToday(String language) =>
-      language == 'en' ? 'See today' : 'Bugünü gör';
+  static String playAgain(String language) =>
+      language == 'en' ? 'Play again' : 'Tekrar oyna';
 
   static String settings(String language) =>
       language == 'en' ? 'Settings' : 'Ayarlar';
@@ -35,13 +35,11 @@ abstract final class AppStrings {
   }
 
   static String won(String language) {
-    return language == 'en' ? 'Today is your day' : 'Bugün senin günün';
+    return language == 'en' ? 'You got it' : 'Bildin';
   }
 
   static String lost(String language) {
-    return language == 'en'
-        ? 'Today is not your day'
-        : 'Bugün senin günün değil';
+    return language == 'en' ? 'So close' : 'Bu sefer olmadı';
   }
 
   static String theWord(String word, String language) {
@@ -62,55 +60,16 @@ abstract final class AppStrings {
   static String streakLine(int streak, String language) {
     if (streak <= 0) return '';
     if (language == 'en') {
-      return streak == 1 ? '1 day streak' : '$streak day streak';
+      return streak == 1 ? '1 win streak' : '$streak win streak';
     }
-    return streak == 1 ? '1 günlük seri' : '$streak günlük seri';
+    return streak == 1 ? '1 kazanma serisi' : '$streak kazanma serisi';
   }
 
   static String howToLines(String language) {
     if (language == 'en') {
-      return 'One word each day.\n${GameConfig.maxMistakes} wrong guesses.\nCome back tomorrow.';
+      return 'Guess the hidden word.\n${GameConfig.maxMistakes} wrong guesses.\nPlay as many rounds as you want.';
     }
-    return 'Her gün bir kelime.\n${GameConfig.maxMistakes} yanlış hakkın var.\nYarın yeni kelime.';
-  }
-
-  static String todayLabel(String dayKey, String language) {
-    final parts = dayKey.split('-');
-    if (parts.length != 3) return dayKey;
-    final month = int.tryParse(parts[1]) ?? 1;
-    final day = int.tryParse(parts[2]) ?? 1;
-    if (language == 'en') {
-      const months = [
-        'January',
-        'February',
-        'March',
-        'April',
-        'May',
-        'June',
-        'July',
-        'August',
-        'September',
-        'October',
-        'November',
-        'December',
-      ];
-      return '${months[month - 1]} $day';
-    }
-    const months = [
-      'Ocak',
-      'Şubat',
-      'Mart',
-      'Nisan',
-      'Mayıs',
-      'Haziran',
-      'Temmuz',
-      'Ağustos',
-      'Eylül',
-      'Ekim',
-      'Kasım',
-      'Aralık',
-    ];
-    return '$day ${months[month - 1]}';
+    return 'Gizli kelimeyi bul.\n${GameConfig.maxMistakes} yanlış hakkın var.\nİstediğin kadar tur oyna.';
   }
 
   static String versionLine() => 'v${AppIdentity.version}';

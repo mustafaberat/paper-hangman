@@ -4,10 +4,11 @@ library;
 import 'package:flutter/material.dart';
 
 abstract final class AppIdentity {
-  static const String appName = 'Hangman';
+  /// Play / launcher display name (package stays com.arusoft.hangdaily).
+  static const String appName = 'Paper Hangman';
   static const String developer = 'ARU SOFT';
   static const String packageId = 'com.arusoft.hangdaily';
-  static const String version = '1.0.1';
+  static const String version = '2.1.0';
 }
 
 abstract final class AppRoutes {
@@ -18,10 +19,11 @@ abstract final class AppRoutes {
 
 abstract final class AppPrefsKeys {
   static const String language = 'language';
+  /// Stores `roundId|language` for the active/last round.
   static const String dayKey = 'day_key';
+  static const String activeWord = 'active_word';
   static const String guesses = 'guesses';
   static const String streak = 'streak';
-  static const String lastWinDay = 'last_win_day';
   static const String resultSeen = 'result_seen';
 }
 

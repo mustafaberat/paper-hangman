@@ -18,16 +18,15 @@ class GameStore extends ChangeNotifier {
   String? error;
   bool resultSeen = false;
   int streak = 0;
-  String? lastWinDay;
 
   bool get hasProgress =>
       round != null && round!.guessed.isNotEmpty && !round!.isWon && !round!.isLost;
 
-  bool get finishedToday =>
+  bool get finished =>
       round != null && round!.status != RoundStatus.playing;
 
   String get playLabel {
-    if (finishedToday) return AppStrings.seeToday(language);
+    if (finished) return AppStrings.playAgain(language);
     if (hasProgress) return AppStrings.continuePlay(language);
     return AppStrings.play(language);
   }
@@ -43,33 +42,65 @@ class GameStore extends ChangeNotifier {
       language = GameConfig.defaultLanguage;
     }
     streak = prefs.getInt(AppPrefsKeys.streak) ?? 0;
-    lastWinDay = prefs.getString(AppPrefsKeys.lastWinDay);
 
-    final daily = await pickDailyWord(language: language);
-    if (daily == null) {
-      error = AppStrings.emptyList(language);
+    final savedKey = prefs.getString(AppPrefsKeys.dayKey);
+    final savedGuesses = prefs.getStringList(AppPrefsKeys.guesses) ?? [];
+    final savedWord = prefs.getString(AppPrefsKeys.activeWord);
+
+    if (savedKey != null &&
+        savedKey.endsWith('|$language') &&
+        savedWord != null &&
+        savedWord.isNotEmpty) {
+      final roundId = savedKey.split('|').first;
+      round = HangmanRound(
+        word: savedWord,
+        language: language,
+        roundId: roundId,
+        guessed: savedGuesses.map((g) => foldLetter(g, language)).toSet(),
+      );
+      resultSeen = prefs.getString(AppPrefsKeys.resultSeen) == savedKey;
       loading = false;
+      error = null;
       notifyListeners();
       return;
     }
 
-    final savedDay = prefs.getString(AppPrefsKeys.dayKey);
-    final savedGuesses = prefs.getStringList(AppPrefsKeys.guesses) ?? [];
-    final sameDay = savedDay == '${daily.dayKey}|$language';
+    await startNewGame(notifyLoading: false);
+    loading = false;
+    notifyListeners();
+  }
+
+  Future<void> startNewGame({bool notifyLoading = true}) async {
+    if (notifyLoading) {
+      loading = true;
+      notifyListeners();
+    }
+
+    final picked = await pickWord(
+      language: language,
+      avoidWord: round?.word,
+    );
+    if (picked == null) {
+      error = AppStrings.emptyList(language);
+      round = null;
+      if (notifyLoading) {
+        loading = false;
+        notifyListeners();
+      }
+      return;
+    }
 
     round = HangmanRound(
-      word: daily.word,
+      word: picked.word,
       language: language,
-      dayKey: daily.dayKey,
-      guessed: sameDay
-          ? savedGuesses.map((g) => foldLetter(g, language)).toSet()
-          : <String>{},
+      roundId: picked.roundId,
     );
-    resultSeen = sameDay &&
-        prefs.getString(AppPrefsKeys.resultSeen) == '${daily.dayKey}|$language';
-    loading = false;
+    resultSeen = false;
     error = null;
-    notifyListeners();
+    if (notifyLoading) {
+      loading = false;
+      notifyListeners();
+    }
     await _persist();
   }
 
@@ -78,7 +109,7 @@ class GameStore extends ChangeNotifier {
     language = code;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(AppPrefsKeys.language, code);
-    await load();
+    await startNewGame();
   }
 
   Future<void> guess(String letter) async {
@@ -87,14 +118,7 @@ class GameStore extends ChangeNotifier {
     final next = current.guess(letter);
     if (current.status == RoundStatus.playing &&
         next.status != RoundStatus.playing) {
-      final update = nextStreak(
-        won: next.isWon,
-        today: next.dayKey,
-        lastWinDay: lastWinDay,
-        streak: streak,
-      );
-      streak = update.streak;
-      lastWinDay = update.lastWinDay;
+      streak = nextWinStreak(won: next.isWon, streak: streak);
       resultSeen = false;
     }
     round = next;
@@ -114,23 +138,18 @@ class GameStore extends ChangeNotifier {
     final current = round;
     if (current == null) return;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-      AppPrefsKeys.dayKey,
-      '${current.dayKey}|${current.language}',
-    );
+    final key = '${current.roundId}|${current.language}';
+    await prefs.setString(AppPrefsKeys.dayKey, key);
+    await prefs.setString(AppPrefsKeys.activeWord, current.word);
     await prefs.setStringList(
       AppPrefsKeys.guesses,
       current.guessed.toList(),
     );
     await prefs.setInt(AppPrefsKeys.streak, streak);
-    if (lastWinDay != null) {
-      await prefs.setString(AppPrefsKeys.lastWinDay, lastWinDay!);
-    }
     if (resultSeen) {
-      await prefs.setString(
-        AppPrefsKeys.resultSeen,
-        '${current.dayKey}|${current.language}',
-      );
+      await prefs.setString(AppPrefsKeys.resultSeen, key);
+    } else {
+      await prefs.remove(AppPrefsKeys.resultSeen);
     }
   }
 }

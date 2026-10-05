@@ -1,7 +1,9 @@
-/// Play Console görselleri: gerçek Hangman ekranlarını Play ölçülerinde PNG yazar.
+/// Play phone raw captures for Paper Hangman (tr / en).
 ///
-/// Çalıştır: `APP_ROOT=. ../lib/scripts/generate_game_images.sh`
-/// Çıktı: `play/gorseller/{ozellik-grafik,telefon,tablet,pc,chromebook}/`
+/// Output: `play/gorseller/raw/{tr,en}/01-home|02-play|03-settings.png`
+/// Size: 390×844 @3× → 1170×2532.
+///
+/// Run: `APP_ROOT=. ../lib/scripts/generate_game_images.sh`
 library;
 
 import 'dart:io';
@@ -19,25 +21,19 @@ import 'package:hangman/game/game_store.dart';
 import 'package:hangman/game/letters.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Play Console zorunlu / önerilen piksel ölçüleri (UI token değil).
+const Size _logicalPhone = Size(390, 844);
+const double _dpr = 3;
 const Size _featureSize = Size(1024, 500);
-const Size _phoneSize = Size(1080, 1920);
-const Size _tabletSize = Size(1440, 2560);
-const Size _wideSize = Size(1920, 1080);
-
-const String _outRoot = 'play/gorseller';
+const String _outRoot = 'play/gorseller/raw';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   testWidgets('Play gorsellerini yaz', (tester) async {
     await tester.runAsync(_loadRealFonts);
-    final shots = <String, Future<void> Function(WidgetTester, String)>{
-      '01-anasayfa': _shotHome,
-      '02-oyun': _shotPlay,
-      '03-ayarlar': _shotSettings,
-      '04-bitti': _shotResult,
-    };
 
-    _setView(tester, _featureSize);
+    // Feature graphic (shared, TR branding).
+    _setView(tester, _featureSize, dpr: 1);
     final featureKey = GlobalKey();
     await tester.pumpWidget(
       RepaintBoundary(
@@ -53,21 +49,22 @@ void main() {
     await _writePng(
       tester,
       featureKey,
-      '$_outRoot/ozellik-grafik/hangman-1024x500.png',
+      'play/gorseller/ozellik-grafik/hangman-1024x500.png',
+      pixelRatio: 1,
     );
+    final featureSrc =
+        File('play/gorseller/ozellik-grafik/hangman-1024x500.png');
+    for (final lang in ['tr', 'en']) {
+      final dest = File('play/gorseller/$lang/feature.png');
+      dest.parent.createSync(recursive: true);
+      featureSrc.copySync(dest.path);
+    }
 
-    const devices = <String, Size>{
-      'telefon': _phoneSize,
-      'tablet': _tabletSize,
-      'pc': _wideSize,
-      'chromebook': _wideSize,
-    };
-
-    for (final device in devices.entries) {
-      for (final shot in shots.entries) {
-        _setView(tester, device.value);
-        await shot.value(tester, '$_outRoot/${device.key}/${shot.key}.png');
-      }
+    const langs = ['tr', 'en'];
+    for (final lang in langs) {
+      await _shotHome(tester, lang, '$_outRoot/$lang/01-home.png');
+      await _shotPlay(tester, lang, '$_outRoot/$lang/02-play.png');
+      await _shotSettings(tester, lang, '$_outRoot/$lang/03-settings.png');
     }
   }, timeout: const Timeout(Duration(minutes: 4)));
 }
@@ -90,7 +87,11 @@ Future<void> _loadRealFonts() async {
   final root = Platform.environment['FLUTTER_ROOT'];
   expect(root, isNotNull, reason: 'FLUTTER_ROOT yok');
   final icons = FontLoader('MaterialIcons');
-  icons.addFont(fileBytes('$root/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf'));
+  icons.addFont(
+    fileBytes(
+      '$root/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf',
+    ),
+  );
   await icons.load();
 }
 
@@ -102,81 +103,81 @@ Future<void> _settle(WidgetTester tester) {
   );
 }
 
-void _setView(WidgetTester tester, Size size) {
-  tester.view.physicalSize = size;
-  tester.view.devicePixelRatio = 1;
+void _setView(WidgetTester tester, Size size, {double dpr = _dpr}) {
+  tester.view.physicalSize = Size(size.width * dpr, size.height * dpr);
+  tester.view.devicePixelRatio = dpr;
   tester.view.padding = FakeViewPadding.zero;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
   addTearDown(tester.view.resetPadding);
 }
 
-Future<(GlobalKey, GameStore)> _pumpApp(WidgetTester tester) async {
+Future<(GlobalKey, GameStore)> _pumpApp(
+  WidgetTester tester,
+  String lang,
+) async {
+  _setView(tester, _logicalPhone);
   SharedPreferences.setMockInitialValues({
-    AppPrefsKeys.language: 'tr',
+    AppPrefsKeys.language: lang,
     AppPrefsKeys.streak: 3,
-    AppPrefsKeys.lastWinDay: '2026-09-19',
   });
   final store = GameStore();
+  // Deterministic word for screenshots.
   await store.load();
+  // Re-seed a known mid-length word via prefs wipe + fixed random path:
+  // load already picked random; for play shot we just use whatever was picked.
   final key = GlobalKey();
   await tester.pumpWidget(
     RepaintBoundary(
       key: key,
-      child: HangmanApp(store: store),
+      child: MediaQuery(
+        data: MediaQueryData(
+          size: _logicalPhone,
+          devicePixelRatio: _dpr,
+          padding: const EdgeInsets.only(top: 47, bottom: 34),
+          textScaler: TextScaler.noScaling,
+        ),
+        child: HangmanApp(store: store),
+      ),
     ),
   );
   await _settle(tester);
   return (key, store);
 }
 
-Future<void> _shotHome(WidgetTester tester, String path) async {
-  final shot = await _pumpApp(tester);
+Future<void> _shotHome(WidgetTester tester, String lang, String path) async {
+  final shot = await _pumpApp(tester, lang);
   await _writePng(tester, shot.$1, path);
 }
 
-Future<void> _shotPlay(WidgetTester tester, String path) async {
-  final shot = await _pumpApp(tester);
-  await _openPlay(tester);
+Future<void> _shotPlay(WidgetTester tester, String lang, String path) async {
+  final shot = await _pumpApp(tester, lang);
+  await tester.tap(find.text(AppStrings.play(lang)));
+  await _settle(tester);
   await _tapPartial(tester, shot.$2);
   await _writePng(tester, shot.$1, path);
 }
 
-Future<void> _shotSettings(WidgetTester tester, String path) async {
-  final shot = await _pumpApp(tester);
-  await tester.tap(find.text(AppStrings.settings('tr')));
+Future<void> _shotSettings(
+  WidgetTester tester,
+  String lang,
+  String path,
+) async {
+  final shot = await _pumpApp(tester, lang);
+  await tester.tap(find.text(AppStrings.settings(lang)));
   await _settle(tester);
   await _writePng(tester, shot.$1, path);
-}
-
-Future<void> _shotResult(WidgetTester tester, String path) async {
-  final shot = await _pumpApp(tester);
-  await _openPlay(tester);
-  await _tapAllLetters(tester, shot.$2);
-  await tester.pump();
-  await _settle(tester);
-  await _writePng(tester, shot.$1, path);
-}
-
-Future<void> _openPlay(WidgetTester tester) async {
-  await tester.tap(find.text(AppStrings.play('tr')));
-  await _settle(tester);
 }
 
 Future<void> _tapPartial(WidgetTester tester, GameStore store) async {
   final wordLetters = store.round!.letters.toSet();
-  final hits = wordLetters.take(3).map((l) => l.toUpperCase());
+  final hits = wordLetters.take(2).map((l) => l.toUpperCase());
   final miss = _firstMiss(store);
   await _tapLetters(tester, [...hits, miss]);
 }
 
-Future<void> _tapAllLetters(WidgetTester tester, GameStore store) async {
-  final hits = store.round!.letters.toSet().map((l) => l.toUpperCase());
-  await _tapLetters(tester, hits);
-}
-
 String _firstMiss(GameStore store) {
-  const candidates = ['Y', 'T', 'K', 'N', 'Ö', 'Ş', 'P'];
+  const candidates = ['Y', 'T', 'K', 'N', 'Ö', 'Ş', 'P', 'X', 'Q'];
   for (final letter in candidates) {
     if (!store.round!.letters.contains(foldLetter(letter, store.language))) {
       return letter;
@@ -195,18 +196,25 @@ Future<void> _tapLetters(WidgetTester tester, Iterable<String> letters) async {
   }
 }
 
-Future<void> _writePng(WidgetTester tester, GlobalKey key, String path) async {
+Future<void> _writePng(
+  WidgetTester tester,
+  GlobalKey key,
+  String path, {
+  double pixelRatio = _dpr,
+}) async {
   await tester.pump();
   final bytes = await tester.binding.runAsync(() async {
     final boundary =
         key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
-    final image = await boundary.toImage(pixelRatio: 1);
+    final image = await boundary.toImage(pixelRatio: pixelRatio);
     final data = await image.toByteData(format: ui.ImageByteFormat.png);
     return data!.buffer.asUint8List();
   });
   final file = File(path);
   file.parent.createSync(recursive: true);
   file.writeAsBytesSync(bytes!);
+  // ignore: avoid_print
+  print('wrote $path (${bytes.length} bytes)');
 }
 
 class _FeatureGraphic extends StatelessWidget {
@@ -225,7 +233,7 @@ class _FeatureGraphic extends StatelessWidget {
               const SizedBox(
                 width: 200,
                 height: 200,
-                child: HangmanFigure(mistakes: 6),
+                child: HangmanFigure(mistakes: 4),
               ),
               const SizedBox(width: 36),
               Column(
@@ -233,16 +241,16 @@ class _FeatureGraphic extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    AppStrings.appTitle('tr'),
+                    AppStrings.appTitle('en'),
                     style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                          fontSize: 56,
+                          fontSize: 52,
                         ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    AppStrings.tagline('tr'),
+                    AppStrings.tagline('en'),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontSize: 22,
+                          fontSize: 20,
                         ),
                   ),
                 ],

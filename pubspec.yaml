@@ -1,7 +1,7 @@
 name: hangman
-description: A minimal daily hangman word game.
+description: Paper Hangman — unlimited notebook-style hangman word game.
 publish_to: 'none'
-version: 1.0.1+1
+version: 2.1.0+3
 
 environment:
   sdk: ^3.7.2

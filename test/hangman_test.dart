@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hangman/config/game_config.dart';
 import 'package:hangman/game/daily_word.dart';
@@ -6,14 +8,21 @@ import 'package:hangman/game/letters.dart';
 import 'package:hangman/game/streak.dart';
 
 void main() {
-  test('daily index is stable for a day and language', () {
-    final a = dailyIndex(dayKey: '2026-09-17', language: 'tr', length: 14);
-    final b = dailyIndex(dayKey: '2026-09-17', language: 'tr', length: 14);
-    final c = dailyIndex(dayKey: '2026-09-18', language: 'tr', length: 14);
-    final d = dailyIndex(dayKey: '2026-09-17', language: 'en', length: 14);
-    expect(a, b);
-    expect(a, isNot(c));
-    expect(a, isNot(d));
+  test('pickWord avoids immediate repeat when possible', () async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    final first = await pickWord(
+      language: 'en',
+      random: Random(1),
+    );
+    expect(first, isNotNull);
+    final second = await pickWord(
+      language: 'en',
+      avoidWord: first!.word,
+      random: Random(1),
+    );
+    expect(second, isNotNull);
+    // Same seed would pick same index; avoidWord must shift it.
+    expect(second!.word.toLowerCase(), isNot(first.word.toLowerCase()));
   });
 
   test('turkish dotted i folds correctly', () {
@@ -26,7 +35,7 @@ void main() {
     var round = HangmanRound(
       word: 'kal',
       language: 'tr',
-      dayKey: '2026-09-17',
+      roundId: 'r-test',
     );
     const misses = ['e', 'r', 't', 'y', 'u', 'o'];
     for (final m in misses) {
@@ -36,27 +45,9 @@ void main() {
     expect(round.status, RoundStatus.lost);
   });
 
-  test('streak grows on consecutive wins and resets on a loss', () {
-    final first = nextStreak(
-      won: true,
-      today: '2026-09-17',
-      lastWinDay: null,
-      streak: 0,
-    );
-    expect(first.streak, 1);
-    final second = nextStreak(
-      won: true,
-      today: '2026-09-18',
-      lastWinDay: first.lastWinDay,
-      streak: first.streak,
-    );
-    expect(second.streak, 2);
-    final lost = nextStreak(
-      won: false,
-      today: '2026-09-19',
-      lastWinDay: second.lastWinDay,
-      streak: second.streak,
-    );
-    expect(lost.streak, 0);
+  test('win streak grows on wins and resets on a loss', () {
+    expect(nextWinStreak(won: true, streak: 0), 1);
+    expect(nextWinStreak(won: true, streak: 1), 2);
+    expect(nextWinStreak(won: false, streak: 2), 0);
   });
 }

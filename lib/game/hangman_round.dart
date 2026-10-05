@@ -9,13 +9,13 @@ class HangmanRound {
   HangmanRound({
     required this.word,
     required this.language,
-    required this.dayKey,
+    required this.roundId,
     Set<String>? guessed,
   }) : guessed = guessed ?? <String>{};
 
   final String word;
   final String language;
-  final String dayKey;
+  final String roundId;
   final Set<String> guessed;
 
   List<String> get letters => graphemes(word, language);
@@ -53,7 +53,7 @@ class HangmanRound {
     return HangmanRound(
       word: word,
       language: language,
-      dayKey: dayKey,
+      roundId: roundId,
       guessed: {...guessed, foldLetter(raw, language)},
     );
   }

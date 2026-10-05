@@ -1,45 +1,24 @@
 library;
 
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/services.dart';
 
 import '../config/game_config.dart';
 
-class DailyWord {
-  const DailyWord({
+class PickedWord {
+  const PickedWord({
     required this.word,
     required this.index,
-    required this.dayKey,
+    required this.roundId,
     required this.language,
   });
 
   final String word;
   final int index;
-  final String dayKey;
+  final String roundId;
   final String language;
-}
-
-String dayKeyFor(DateTime utcDay) {
-  final y = utcDay.year.toString().padLeft(4, '0');
-  final m = utcDay.month.toString().padLeft(2, '0');
-  final d = utcDay.day.toString().padLeft(2, '0');
-  return '$y-$m-$d';
-}
-
-int dailyIndex({
-  required String dayKey,
-  required String language,
-  required int length,
-}) {
-  if (length <= 0) return 0;
-  final seed = '$dayKey|$language';
-  var hash = 2166136261;
-  for (final unit in seed.codeUnits) {
-    hash ^= unit;
-    hash = (hash * 16777619) & 0x7fffffff;
-  }
-  return hash % length;
 }
 
 Future<List<String>> loadWords(String language) async {
@@ -57,23 +36,29 @@ Future<List<String>> loadWords(String language) async {
       .toList();
 }
 
-Future<DailyWord?> pickDailyWord({
+/// Random word for unlimited play. Avoids repeating [avoidWord] when possible.
+Future<PickedWord?> pickWord({
   required String language,
-  DateTime? nowUtc,
+  String? avoidWord,
+  Random? random,
 }) async {
   final words = await loadWords(language);
   if (words.isEmpty) return null;
-  final day = nowUtc ?? DateTime.now().toUtc();
-  final key = dayKeyFor(DateTime.utc(day.year, day.month, day.day));
-  final index = dailyIndex(
-    dayKey: key,
-    language: language,
-    length: words.length,
-  );
-  return DailyWord(
+
+  final rng = random ?? Random();
+  var index = rng.nextInt(words.length);
+  if (words.length > 1 &&
+      avoidWord != null &&
+      words[index].toLowerCase() == avoidWord.toLowerCase()) {
+    index = (index + 1 + rng.nextInt(words.length - 1)) % words.length;
+  }
+
+  final roundId =
+      'r-${DateTime.now().toUtc().millisecondsSinceEpoch}-$index';
+  return PickedWord(
     word: words[index],
     index: index,
-    dayKey: key,
+    roundId: roundId,
     language: language,
   );
 }

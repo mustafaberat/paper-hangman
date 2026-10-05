@@ -38,11 +38,19 @@ class _Menu extends StatelessWidget {
 
   final GameStore store;
 
+  Future<void> _onPlay(BuildContext context) async {
+    if (store.finished) {
+      await store.startNewGame();
+    }
+    if (!context.mounted) return;
+    await Navigator.pushNamed(context, AppRoutes.play);
+  }
+
   @override
   Widget build(BuildContext context) {
     final lang = store.language;
     final round = store.round;
-    final finished = store.finishedToday;
+    final finished = store.finished;
 
     return Column(
       children: [
@@ -64,15 +72,9 @@ class _Menu extends StatelessWidget {
         const SizedBox(height: 6),
         Text(
           AppStrings.tagline(lang),
+          textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.bodyMedium,
         ),
-        if (round != null) ...[
-          const SizedBox(height: 4),
-          Text(
-            AppStrings.todayLabel(round.dayKey, lang),
-            style: Theme.of(context).textTheme.bodyLarge,
-          ),
-        ],
         if (store.streak > 0) ...[
           const SizedBox(height: 4),
           Text(
@@ -104,7 +106,7 @@ class _Menu extends StatelessWidget {
         InkButton(
           label: store.playLabel,
           large: true,
-          onTap: () => Navigator.pushNamed(context, AppRoutes.play),
+          onTap: () => _onPlay(context),
         ),
         const SizedBox(height: AppDimens.spaceSmall),
         TextButton(

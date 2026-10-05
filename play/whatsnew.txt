@@ -1,18 +1,18 @@
 <tr-TR>
-İlk sürüm. Her gün bir kelime, kareli defter arayüzü. Ana sayfadan oyna, ayarlardan dil. Bitince kazandın / kaybettin penceresi.
+Sınırsız oyna: günlük kelime limiti kalktı. İstediğin kadar tur. Yeni ad: Paper Hangman / Adam Asmaca.
 </tr-TR>
 <en-US>
-First release. One word a day, notebook look. Play from the home screen, language in settings. A win/lose popup when the day ends.
+Play without limits — the daily word cap is gone. New name: Paper Hangman.
 </en-US>
 <es-419>
-Primera versión. Una palabra al día, estilo cuaderno. Juega desde el inicio, idioma en ajustes. Ventana de victoria o derrota al terminar.
+Juega sin límite: se quitó la palabra del día. Nuevo nombre: Paper Hangman.
 </es-419>
 <pt-BR>
-Primeira versão. Uma palavra por dia, visual de caderno. Jogue na tela inicial, idioma nas configurações. Janela de vitória ou derrota ao terminar.
+Jogue sem limites — a palavra do dia acabou. Novo nome: Paper Hangman.
 </pt-BR>
 <id>
-Rilis pertama. Satu kata per hari, tampilan buku catatan. Main dari beranda, bahasa di pengaturan. Popup menang/kalah di akhir.
+Main tanpa batas — kata harian dihapus. Nama baru: Paper Hangman.
 </id>
 <hi-IN>
-पहला संस्करण। हर दिन एक शब्द, कॉपी जैसा रूप। होम से खेलें, सेटिंग में भाषा। खत्म होने पर जीत/हार पॉपअप।
+बिना सीमा खेले — दैनिक शब्द हटाया गया। नया नाम: Paper Hangman.
 </hi-IN>

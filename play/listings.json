@@ -1,0 +1,12 @@
+{
+  "tr-TR": {
+    "title": "Adam Asmaca: Defter",
+    "shortDescription": "Kareli defterde adam asmaca — istediğin kadar kelime tahmin et",
+    "fullDescription": "Paper Hangman (Adam Asmaca), kareli defter görünümünde klasik kelime oyunu.\n\n• İstediğin kadar tur oyna — günlük limit yok\n• Türkçe ve İngilizce kelime listeleri\n• 6 yanlış hakkın var\n• Kazanma serisini koru\n• Hesap gerekmez\n\nHemen bir kelime seçilir; tahmin et, çizimi tamamlanmadan bul.\n\nGeliştirici: ARU Soft"
+  },
+  "en-US": {
+    "title": "Paper Hangman",
+    "shortDescription": "Classic hangman on notebook paper — play as many rounds as you want",
+    "fullDescription": "Paper Hangman is a classic word-guessing game with a notebook look.\n\n• Play unlimited rounds — no daily lock\n• Turkish and English word lists\n• 6 wrong guesses\n• Keep a win streak\n• No account needed\n\nA word is picked for you — guess letters before the figure is complete.\n\nDeveloper: ARU Soft"
+  }
+}
