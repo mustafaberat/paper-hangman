@@ -3,6 +3,8 @@
 
 Reads play/gorseller/raw/{tr,en}/0*.png → play/gorseller/{tr,en}/0*.png
 
+Header style A: bold modern sans (Arial Black) + filled blue chips.
+
   python3 tool/make_play_vitrine.py
 """
 from __future__ import annotations
@@ -24,13 +26,11 @@ MARGIN = (225, 91, 91)  # #E15B5B
 GRID = (183, 205, 216)  # #B7CDD8
 MUTED = (110, 103, 92)
 WHITE = (255, 255, 255)
-SOFT = (251, 248, 240)
 
-FONT = "/System/Library/Fonts/SFNSRounded.ttf"
+FONT_SF = "/System/Library/Fonts/SFNS.ttf"
+FONT_SF_R = "/System/Library/Fonts/SFNSRounded.ttf"
+FONT_TITLE = "/System/Library/Fonts/Supplemental/Arial Black.ttf"
 FALLBACK = "/System/Library/Fonts/Supplemental/Arial Unicode.ttf"
-# Prefer game hand font when available
-HAND = ROOT / "fonts" / "PatrickHand-Regular.ttf"
-PEN_FONT = ROOT / "fonts" / "Caveat-Bold.ttf"
 
 SLIDES = {
     "tr": [
@@ -88,10 +88,9 @@ SLIDES = {
 }
 
 
-def font(size: int, hand: bool = False) -> ImageFont.FreeTypeFont:
-    path = HAND if hand and HAND.exists() else FONT
+def font(path: str, size: int) -> ImageFont.FreeTypeFont:
     try:
-        return ImageFont.truetype(str(path), size)
+        return ImageFont.truetype(path, size)
     except OSError:
         return ImageFont.truetype(FALLBACK, size)
 
@@ -116,65 +115,65 @@ def wrap(draw: ImageDraw.ImageDraw, text: str, fnt: ImageFont.FreeTypeFont, max_
 def paper_bg() -> Image.Image:
     img = Image.new("RGB", (W, H), PAPER)
     d = ImageDraw.Draw(img)
-    # grid lines
     step = 28
     for y in range(0, H, step):
         d.line([(0, y), (W, y)], fill=GRID, width=1)
     for x in range(0, W, step):
         d.line([(x, 0), (x, H)], fill=GRID, width=1)
-    # red margin
     d.line([(88, 0), (88, H)], fill=MARGIN, width=4)
-    # soft bottom wash
     wash = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     wd = ImageDraw.Draw(wash)
     for i in range(180):
         a = int(40 * (i / 180))
-        y = H - 180 + i
-        wd.line([(0, y), (W, y)], fill=(30, 68, 214, a))
+        wd.line([(0, H - 180 + i), (W, H - 180 + i)], fill=(30, 68, 214, a))
     return Image.alpha_composite(img.convert("RGBA"), wash).convert("RGB")
 
 
-def rounded_phone(shot: Image.Image, phone_w: int = 860) -> Image.Image:
+def rounded_phone(shot: Image.Image, phone_w: int = 1000) -> Image.Image:
+    """Close-up phone: fills most of the 1170-wide canvas."""
     aspect = shot.height / shot.width
-    screen_w = phone_w - 36
+    screen_w = phone_w - 40
     screen_h = int(screen_w * aspect)
-    max_screen_h = 1480
+    max_screen_h = 1760
     if screen_h > max_screen_h:
         screen_h = max_screen_h
         screen_w = int(screen_h / aspect)
-        phone_w = screen_w + 36
+        phone_w = screen_w + 40
 
-    bezel = 18
-    top_chrome = 42
-    bottom_chrome = 28
+    bezel = 20
+    top_chrome = 46
+    bottom_chrome = 30
     phone_h = screen_h + top_chrome + bottom_chrome
     phone = Image.new("RGBA", (phone_w, phone_h), (0, 0, 0, 0))
     d = ImageDraw.Draw(phone)
-    d.rounded_rectangle([0, 0, phone_w - 1, phone_h - 1], radius=54, fill=(18, 20, 24, 255))
+    d.rounded_rectangle([0, 0, phone_w - 1, phone_h - 1], radius=58, fill=(18, 20, 24, 255))
     d.rounded_rectangle(
         [bezel, top_chrome - 8, phone_w - bezel - 1, phone_h - bottom_chrome],
-        radius=40,
+        radius=42,
         fill=(0, 0, 0, 255),
     )
-    island_w, island_h = 140, 36
+    island_w, island_h = 150, 38
     ix = (phone_w - island_w) // 2
-    d.rounded_rectangle([ix, 14, ix + island_w, 14 + island_h], radius=18, fill=(0, 0, 0, 255))
+    d.rounded_rectangle([ix, 14, ix + island_w, 14 + island_h], radius=19, fill=(0, 0, 0, 255))
 
     screen = shot.resize((screen_w, screen_h), Image.Resampling.LANCZOS).convert("RGBA")
     mask = Image.new("L", (screen_w, screen_h), 0)
-    ImageDraw.Draw(mask).rounded_rectangle([0, 0, screen_w - 1, screen_h - 1], radius=34, fill=255)
+    ImageDraw.Draw(mask).rounded_rectangle([0, 0, screen_w - 1, screen_h - 1], radius=36, fill=255)
     phone.paste(screen, ((phone_w - screen_w) // 2, top_chrome), mask)
 
     shadow = Image.new("RGBA", (phone_w + 80, phone_h + 80), (0, 0, 0, 0))
     ImageDraw.Draw(shadow).rounded_rectangle(
-        [30, 40, phone_w + 50, phone_h + 60], radius=60, fill=(0, 0, 0, 70)
+        [30, 40, phone_w + 50, phone_h + 60], radius=64, fill=(0, 0, 0, 75)
     )
-    shadow = shadow.filter(ImageFilter.GaussianBlur(28))
+    shadow = shadow.filter(ImageFilter.GaussianBlur(30))
     out = Image.new("RGBA", shadow.size, (0, 0, 0, 0))
     out = Image.alpha_composite(out, shadow)
     out.paste(phone, (40, 20), phone)
-    # slight tilt for presence
-    return out.rotate(-5, expand=True, resample=Image.Resampling.BICUBIC)
+    tilted = out.rotate(-3.5, expand=True, resample=Image.Resampling.BICUBIC)
+    target_w = int(W * 0.92)
+    scale = target_w / tilted.width
+    new_size = (target_w, max(1, int(tilted.height * scale)))
+    return tilted.resize(new_size, Image.Resampling.LANCZOS)
 
 
 def draw_title_block(
@@ -185,20 +184,22 @@ def draw_title_block(
     sub: str,
     chips: list[str],
 ) -> int:
+    """Style A — bold sans headline + filled chips."""
     d = ImageDraw.Draw(canvas)
-    title_f = font(74, hand=True)
-    sub_f = font(34, hand=True)
-    chip_f = font(28, hand=True)
-    brand_f = font(32, hand=False)
+    brand_f = font(FONT_SF_R, 28)
+    title_f = font(FONT_TITLE, 76)
+    sub_f = font(FONT_SF, 32)
+    chip_f = font(FONT_SF_R, 26)
 
-    pad_x = 72
+    pad_x = 64
     max_w = W - pad_x * 2
-    y = 88
+    y = 56
 
-    bw = d.textlength(brand, font=brand_f) + 36
-    d.rounded_rectangle([pad_x, y, pad_x + bw, y + 48], radius=24, fill=PEN)
-    d.text((pad_x + 18, y + 8), brand, font=brand_f, fill=WHITE)
-    y += 74
+    label = brand.upper()
+    d.text((pad_x, y), label, font=brand_f, fill=PEN)
+    tw = d.textlength(label, font=brand_f)
+    d.rectangle([pad_x, y + 36, pad_x + tw, y + 40], fill=PEN)
+    y += 58
 
     for line in wrap(d, title, title_f, max_w):
         if accent_word and accent_word in line:
@@ -213,12 +214,12 @@ def draw_title_block(
                     x += d.textlength(accent_word, font=title_f)
         else:
             d.text((pad_x, y), line, font=title_f, fill=INK)
-        y += 84
+        y += 88
 
-    y += 4
+    y += 6
     for line in wrap(d, sub, sub_f, max_w):
         d.text((pad_x, y), line, font=sub_f, fill=MUTED)
-        y += 44
+        y += 40
 
     y += 22
     x = pad_x
@@ -226,13 +227,12 @@ def draw_title_block(
         cw = d.textlength(chip, font=chip_f) + 40
         if x + cw > W - pad_x:
             x = pad_x
-            y += 54
-        d.rounded_rectangle([x, y, x + cw, y + 44], radius=22, fill=SOFT)
-        d.rounded_rectangle([x, y, x + cw, y + 44], radius=22, outline=PEN, width=2)
-        d.text((x + 20, y + 6), chip, font=chip_f, fill=PEN)
+            y += 56
+        d.rounded_rectangle([x, y, x + cw, y + 44], radius=22, fill=PEN)
+        d.text((x + 20, y + 8), chip, font=chip_f, fill=WHITE)
         x += cw + 12
 
-    return y + 64
+    return y + 56
 
 
 def compose(lang: str, slide: dict) -> Image.Image:
@@ -251,11 +251,11 @@ def compose(lang: str, slide: dict) -> Image.Image:
     )
 
     shot = Image.open(raw_path).convert("RGBA")
-    phone = rounded_phone(shot, phone_w=820)
+    phone = rounded_phone(shot, phone_w=1000)
     px = (W - phone.width) // 2
-    py = min(max(y_after - 30, 520), H - phone.height + 60)
-    if py + phone.height > H + 20:
-        py = H - phone.height + 60
+    py = min(max(y_after - 20, 420), H - phone.height + 140)
+    if py + phone.height > H + 120:
+        py = H - phone.height + 140
     canvas.alpha_composite(phone, (px, py))
     return canvas.convert("RGB")
 
